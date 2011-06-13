@@ -3,6 +3,7 @@
 #include <GL/glut.h>
 #include "lib/stdafx.h"
 #include "lib/glm.h"
+#include "Camera.h"
 
 //CONSTANTES
 #define PERSPECTIVE 1
@@ -78,7 +79,7 @@ void renderScene(void)
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity (); //Coordenadas do universo restabelecidas
 	
-	glPopMatrix(); //Volta para as coordenadas do aviao
+	//glPopMatrix(); //Volta para as coordenadas do aviao
 	if (firstTime==1)
 	{
 		glTranslatef(0,50,0);	
@@ -89,10 +90,25 @@ void renderScene(void)
 	drawAirplane();
 	
 	glPushMatrix();	
-	//glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	drawScene();
+	glColor3f(1.0, 0.0, 0.0);
+	glTranslatef(-50.0, 0.0, -50.0);
+	glutSolidCube(25.0);
+
+	glColor3f(0.0, 1.0, 0.0);
+	glTranslatef(-50.0, 0.0, 50.0);
+	glutSolidCube(25.0);
+
+	glColor3f(0.0, 0.0, 1.0);
+	glTranslatef(50.0, 0.0, -50.0);
+	glutSolidCube(25.0);
+
+	glColor3f(0.0, 1.0, 1.0);
+	glTranslatef(50.0, 0.0, 50.0);
+	glutSolidCube(25.0);
 	glPopMatrix();
 
 	glutSwapBuffers();
@@ -107,7 +123,11 @@ void reshape(int w, int h)
 	else
 		setOrtographicView();
    
-    glPushMatrix(); 
+    glPushMatrix();
+	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
+	glMatrixMode (GL_PROJECTION);
+    glLoadIdentity ();
+	glMatrixMode (GL_MODELVIEW);
 }
 
 void keyEvent(unsigned char key, int x, int y)
