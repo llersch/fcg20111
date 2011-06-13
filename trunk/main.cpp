@@ -10,7 +10,7 @@
 #define ORTOGRAPHIC 2
 #define MAXPITCH 45
 #define TRANSLATEINC 0.1
-#define ROTATEINCCAM 2
+#define ROTATEINCCAM 1.5
 #define ROTATEINCOBJ 4
 
 //area de visualizacao da camera ORTHO
@@ -45,12 +45,13 @@ static float xpoz = 0,ypoz = 0, zpoz = 0, pitch = 0; //determina o quanto o obje
 int cameraType = PERSPECTIVE; //inicializa a camera como perspectiva
 int viewPortHeight;
 int viewPortWidth;
-float translateX = 0,translateY = -50,translateZ = 0, rotateX = 0, rotateY = 0;
+float translateX = 0,translateY = -1,translateZ = 0, rotateX = 0, rotateY = 0;
 int firstTime=1;
 GLfloat luzAmbiente[4]={1,1,1,0.5}; 
 GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor" 
 GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho" 
 GLfloat posicaoLuz[4]={10.0, 10.0, 10.0, 0.0};   // inicial
+
 
 int main(int argc, char** argv)
 {
@@ -59,7 +60,6 @@ int main(int argc, char** argv)
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutInitWindowPosition (15, 15);
 	glutCreateWindow("Simulador");
-
 	glutDisplayFunc(renderScene);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyEvent);
@@ -74,40 +74,51 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+
+
 void renderScene(void)
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity (); //Coordenadas do universo restabelecidas
-	
-	//glPopMatrix(); //Volta para as coordenadas do aviao
 	if (firstTime==1)
 	{
-		glTranslatef(0,50,0);	
-		//glScalef(2.0f,2.0f,2.0f);
+		glTranslatef(25,1.0,0.0);	
+		//glScalef(5.0f,5.0f,5.0f);
+		//glRotatef(180, 0.0, 1.0, 0.0); 
 		firstTime=0;
 	}
 	glColor3f(1.0f, 1.0f, 1.0f);
 	drawAirplane();
 	
 	glPushMatrix();	
-	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	drawScene();
+	glPopMatrix();
+
+	
+	glPushMatrix();	
+	glLoadIdentity();
+
 	glColor3f(1.0, 0.0, 0.0);
-	glTranslatef(-50.0, 0.0, -50.0);
+	glTranslatef(-20.0, 0.0, -20.0);
 	glutSolidCube(25.0);
+
+	glLoadIdentity();
 
 	glColor3f(0.0, 1.0, 0.0);
-	glTranslatef(-50.0, 0.0, 50.0);
+	glTranslatef(-20.0, 0.0, 20.0);
 	glutSolidCube(25.0);
+
+	glLoadIdentity();
 
 	glColor3f(0.0, 0.0, 1.0);
-	glTranslatef(50.0, 0.0, -50.0);
+	glTranslatef(20.0, 0.0, -20.0);
 	glutSolidCube(25.0);
 
-	glColor3f(0.0, 1.0, 1.0);
-	glTranslatef(50.0, 0.0, 50.0);
+	glLoadIdentity();
+
+	glColor3f(1.0, 1.0, 0.0);
+	glTranslatef(20.0, 0.0, 20.0);
 	glutSolidCube(25.0);
 	glPopMatrix();
 
@@ -123,10 +134,6 @@ void reshape(int w, int h)
 	else
 		setOrtographicView();
    
-    glPushMatrix();
-	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
-	glMatrixMode (GL_PROJECTION);
-    glLoadIdentity ();
 	glMatrixMode (GL_MODELVIEW);
 }
 
@@ -218,7 +225,6 @@ void keyEvent(unsigned char key, int x, int y)
   		}
 
 	
-	glPushMatrix();	//vai para as coordenadas de universo
 	glutPostRedisplay();
 }
 
@@ -241,7 +247,6 @@ void specialEvent(int key, int x, int y)
 	}
 	setPerspectiveView();
 
-	glPushMatrix();	//vai para as coordenadas de universo
 	glutPostRedisplay();
 }
 
