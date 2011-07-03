@@ -47,10 +47,10 @@ int viewPortHeight;
 int viewPortWidth;
 float translateX = 0,translateY = -1,translateZ = 0, rotateX = 0, rotateY = 0;
 int firstTime=1;
-GLfloat luzAmbiente[4]={1,1,1,0.5}; 
+GLfloat luzAmbiente[4]={0.5,0.5,0.5,0.5};	//luz ambiente 
 GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor" 
 GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho" 
-GLfloat posicaoLuz[4]={10.0, 10.0, 10.0, 0.0};   // inicial
+GLfloat posicaoLuz[4]={50.0, 99.0, 0.0, 0.0};   // inicial
 
 
 int main(int argc, char** argv)
@@ -74,8 +74,6 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-
-
 void renderScene(void)
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -87,40 +85,11 @@ void renderScene(void)
 		firstTime=0;
 	}
 	glColor3f(1.0f, 1.0f, 1.0f);
-	drawAirplane();
-	
-	glPushMatrix();	
-	glLoadIdentity();
-
-	drawScene();
-	glPopMatrix();
-
-	
-	glPushMatrix();	
-	glLoadIdentity();
-
-	glColor3f(1.0, 0.0, 0.0);
-	glTranslatef(-20.0, 0.0, -20.0);
-	glutSolidCube(25.0);
-
-	glLoadIdentity();
-
-	glColor3f(0.0, 1.0, 0.0);
-	glTranslatef(-20.0, 0.0, 20.0);
-	glutSolidCube(25.0);
-
-	glLoadIdentity();
-
-	glColor3f(0.0, 0.0, 1.0);
-	glTranslatef(20.0, 0.0, -20.0);
-	glutSolidCube(25.0);
-
-	glLoadIdentity();
-
-	glColor3f(1.0, 1.0, 0.0);
-	glTranslatef(20.0, 0.0, 20.0);
-	glutSolidCube(25.0);
-	glPopMatrix();
+	drawAirplane();	//Desenha o aviao
+	glPushMatrix();	//Salva matriz de coordenadas do aviao
+	glLoadIdentity();	//Reestabelece matriz de coordenadas original
+	drawScene();		//Desenha o cenario.
+	glPopMatrix();	//Reestabelece a matriz de coordenadas do aviao
 
 	glutSwapBuffers();
 }
@@ -270,7 +239,7 @@ void setup(void)
 	glEnable(GL_LIGHT0);
 	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, posicaoLuz );
-	//glLightfv(GL_LIGHT0, GL_AMBIENT,luzAmbiente);
+	glLightfv(GL_LIGHT0, GL_AMBIENT,luzAmbiente);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, luzEspecular );
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, luzDifusa );
 
@@ -283,7 +252,7 @@ void drawScene(void)
 
 	float w, h;
 
-	//Desenha esfera
+	//======================================== ESFERA ========================================
 	GLuint textureSky = glmLoadTexture("sky.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
@@ -302,7 +271,7 @@ void drawScene(void)
 	glDisable(GL_TEXTURE_GEN_T);
 	glDisable(GL_TEXTURE_2D);
 
-	//Desenha plano
+	//======================================== PLANO ========================================
 	GLuint textureGrass = glmLoadTexture("grass.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -318,6 +287,27 @@ void drawScene(void)
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);
+
+	//======================================== PREDIOS ========================================
+	glLoadIdentity();
+	glColor3f(1.0, 0.0, 0.0);
+	glTranslatef(-20.0, 0.0, -20.0);
+	glutSolidCube(15.0);
+
+	glLoadIdentity();
+	glColor3f(0.0, 1.0, 0.0);
+	glTranslatef(-20.0, 0.0, 20.0);
+	glutSolidCube(15.0);
+
+	glLoadIdentity();
+	glColor3f(0.0, 0.0, 1.0);
+	glTranslatef(20.0, 0.0, -20.0);
+	glutSolidCube(15.0);
+
+	glLoadIdentity();
+	glColor3f(1.0, 1.0, 0.0);
+	glTranslatef(20.0, 0.0, 20.0);
+	glutSolidCube(15.0);
 }
 
 void drawAirplane(void)
