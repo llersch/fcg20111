@@ -3,15 +3,22 @@
 #include <GL/glut.h>
 #include "lib/stdafx.h"
 #include "lib/glm.h"
-#include "Camera.h"
+#include <math.h>
 
 //CONSTANTES
 #define PERSPECTIVE 1
 #define ORTOGRAPHIC 2
-#define MAXPITCH 45
-#define TRANSLATEINC 0.1
-#define ROTATEINCCAM 1.5
-#define ROTATEINCOBJ 4
+#define THIRDPERSON 3
+#define ANOTHERPLANE 4
+#define ROTATEINCOBJ 3.0
+#define X 0
+#define Y 1
+#define Z 2
+#define PI 3.14159265
+#define FPS 17 //Esse valor e definido por 1000/60
+#define MAXSPEED 0.3 //Velocidade maxima do aviao
+#define MINSPEED 0.12 //Velocidade para alcar voo
+#define SPEEDINC 0.01 //Aceleracao
 
 //area de visualizacao da camera ORTHO
 #define XMIN -100
@@ -38,20 +45,28 @@ void drawAirplane(void);
 GLuint glmLoadTexture(char *filename, GLboolean alpha, GLboolean repeat, GLboolean filtering, GLboolean mipmaps, GLfloat *texcoordwidth, GLfloat *texcoordheight);
 void setPerspectiveView(void);
 void setOrtographicView(void);
+void movePlane(void);
+void idleFunc(void);
+void setThirdPersonView(void);
+void setAnotherPlaneView(void);
+void refreshCamera(void);
+
 
 //Variaveis globais:
 GLMmodel* pmodel1 = NULL;
-static float xpoz = 0,ypoz = 0, zpoz = 0, pitch = 0; //determina o quanto o objeto rotaciona nos eixos
 int cameraType = PERSPECTIVE; //inicializa a camera como perspectiva
 int viewPortHeight;
 int viewPortWidth;
-float translateX = 0,translateY = -1,translateZ = 0, rotateX = 0, rotateY = 0;
 int firstTime=1;
 GLfloat luzAmbiente[4]={0.5,0.5,0.5,0.5};	//luz ambiente 
 GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor" 
 GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho" 
 GLfloat posicaoLuz[4]={50.0, 99.0, 0.0, 0.0};   // inicial
-
+double planePosition[3]={0,1,0};
+double pointVector[3]={0,0,1};
+double planeSpeed=0.0;
+float rotateAngle[3]={0,0,0};
+//float upVector[3]={0,1,0};
 
 int main(int argc, char** argv)
 {
@@ -63,9 +78,10 @@ int main(int argc, char** argv)
 	glutDisplayFunc(renderScene);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyEvent);
-	glutSpecialFunc(specialEvent);
-	glutMouseFunc(mouseEvent);
-	glutMotionFunc(motionEvent);
+	//glutSpecialFunc(specialEvent);
+	//glutMouseFunc(mouseEvent);
+	//glutMotionFunc(motionEvent);
+	glutIdleFunc( idleFunc );	
 
 	setup();
 
@@ -74,22 +90,35 @@ int main(int argc, char** argv)
 	return 0;
 }
 
+
+
 void renderScene(void)
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if (firstTime==1)
-	{
-		glTranslatef(25,1.0,0.0);	
-		//glScalef(5.0f,5.0f,5.0f);
-		//glRotatef(180, 0.0, 1.0, 0.0); 
-		firstTime=0;
-	}
+
 	glColor3f(1.0f, 1.0f, 1.0f);
-	drawAirplane();	//Desenha o aviao
-	glPushMatrix();	//Salva matriz de coordenadas do aviao
-	glLoadIdentity();	//Reestabelece matriz de coordenadas original
-	drawScene();		//Desenha o cenario.
-	glPopMatrix();	//Reestabelece a matriz de coordenadas do aviao
+
+	//Desenha o Aviao
+	glLoadIdentity();
+	glTranslated(planePosition[X], planePosition[Y], planePosition[Z]);
+	glRotatef(rotateAngle[Y],0,1,0);
+	glRotatef(-rotateAngle[X],1,0,0);
+	glRotatef(rotateAngle[Z],0,0,1);
+	drawAirplane();
+	
+	//Desenha a Cena
+	glPushMatrix();	
+	glLoadIdentity();
+	drawScene();
+	glPopMatrix();
+
+
+	//Comandos para acompanhar o comportamento do vôo
+	//system("cls");
+	printf("Velocidade: %f/%f\n",planeSpeed,MAXSPEED);
+	printf("Direcao: %f,%f,%f\n",pointVector[X],pointVector[Y],pointVector[Z]);
+	printf("Posicao: %f,%f,%f\n\n",planePosition[X],planePosition[Y],planePosition[Z]);
+
 
 	glutSwapBuffers();
 }
@@ -98,14 +127,67 @@ void reshape(int w, int h)
 {
 	viewPortHeight = h;
 	viewPortWidth = w;
-    if(cameraType == PERSPECTIVE)
-		setPerspectiveView();    
-	else
-		setOrtographicView();
-   
+    refreshCamera();
 	glMatrixMode (GL_MODELVIEW);
 }
 
+void movePlane(void)
+{
+	if (planeSpeed<MINSPEED && planePosition[Y]>1) //Simulacao de gravidade
+		{
+			planePosition[Y]-=0.1;
+			if( rotateAngle[X]>-90 && rotateAngle[X]<=90)
+				rotateAngle[X]-=ROTATEINCOBJ*10/100;
+			if( rotateAngle[X]<=-90 && rotateAngle[X]>90)
+				rotateAngle[X]+=ROTATEINCOBJ*10/100;
+		}
+
+
+	//Set new camera Up Vector //Tentativa de rotacionar a camera
+//	upVector[X]=sin(rotateAngle[Z]*PI/180)*cos(rotateAngle[Y]*PI/180);
+//	upVector[Y]=cos(rotateAngle[Z]*PI/180)*cos(rotateAngle[X]*PI/180);
+//	upVector[Z]=sin(rotateAngle[X]*PI/180)*sin(rotateAngle[Y]*PI/180);
+
+	
+	//Set new plane Point Vector
+	//pointVector[X]=cos(rotateAngle[Z]*PI/180)*sin(rotateAngle[Y]*PI/180);
+	//pointVector[Y]=sin(rotateAngle[X]*PI/180)*cos(rotateAngle[Z]*PI/180);
+	pointVector[X]=sin(rotateAngle[Y]*PI/180)*cos(rotateAngle[X]*PI/180);
+	pointVector[Y]=sin(rotateAngle[X]*PI/180);
+	pointVector[Z]=cos(rotateAngle[Y]*PI/180)*cos(rotateAngle[X]*PI/180);
+
+	//Setup new Plane Position
+	planePosition[X]+= pointVector[X]*planeSpeed;
+	planePosition[Y]+= pointVector[Y]*planeSpeed;
+	planePosition[Z]+= pointVector[Z]*planeSpeed;
+
+	if (planePosition[Y]<=1) //Simulacao de atrito e ajuste do aviao no solo
+	{
+		planeSpeed-=SPEEDINC*10/100;
+		if(planeSpeed<0)
+			planeSpeed=0;
+		if( (rotateAngle[X]>-90 && rotateAngle[X]<0) || (rotateAngle[X]>90 && rotateAngle[X]<180))
+			rotateAngle[X]+=ROTATEINCOBJ*10/100;
+		if( (rotateAngle[X]<=-90 && rotateAngle[X]>-180) || (rotateAngle[X]<=90 && rotateAngle[X]>0))
+			rotateAngle[X]-=ROTATEINCOBJ*10/100;
+
+	}
+
+
+	if (planePosition[Y]<1) //Colisao com o solo
+		planePosition[Y]=1;
+
+	
+		
+
+}
+void idleFunc(void)
+{
+		movePlane();
+		refreshCamera();
+		glutPostRedisplay();
+		Sleep(FPS);
+}
 void keyEvent(unsigned char key, int x, int y)
 {
 	switch (key) 
@@ -114,109 +196,119 @@ void keyEvent(unsigned char key, int x, int y)
 		case 27:
 			exit(0);
 			break;
+	
+
 		//W - Gira em torno do eixo x
-		case 'w':         
-			if(pitch<MAXPITCH)
+		case 'w':
+			if(planePosition[Y]>1 && planeSpeed>MINSPEED)
 			{
-				pitch = pitch + ROTATEINCOBJ;
-				glRotatef(ROTATEINCOBJ,1,0,0);
+			glRotatef(-ROTATEINCOBJ,1,0,0);
+			rotateAngle[X]-=ROTATEINCOBJ;
+			if(rotateAngle[X]<=-360)
+				rotateAngle[X]+=360.0;
+			movePlane();
 			}
 			break;
 
 		//S - Gira em torno do eixo x
-		case 's':         
-			if(pitch>-MAXPITCH)
-			{
-				pitch = pitch -ROTATEINCOBJ;
-				glRotatef(-ROTATEINCOBJ,1,0,0);
-			}
+		case 's':
+
+				if(planeSpeed>MINSPEED)
+				{
+				glRotatef(ROTATEINCOBJ,1,0,0);
+				rotateAngle[X]+=ROTATEINCOBJ;
+				if(rotateAngle[X]>=360)
+					rotateAngle[X]-=360.0;
+				movePlane();
+				}
+
 			break;
 	  
-		//Q - Gira em torno do eixo y
-		case 'q':         
+		//A - Gira em torno do eixo Y
+		case 'a':
+			if(planeSpeed>0)
+			{
+			rotateAngle[Y]+=ROTATEINCOBJ;
+			if(rotateAngle[Y]>=360)
+				rotateAngle[Y]-=360.0;
+
+			movePlane();
 			glRotatef(ROTATEINCOBJ,0,1,0);
+			}
 			break;
 
-		//E - Gira em torno do eixo y
-		case 'e':         
+		//D - Gira em torno do eixo Y
+		case 'd':
+			if(planeSpeed>0)
+			{
+			rotateAngle[Y]-=ROTATEINCOBJ;
+			if(rotateAngle[Y]<=-360)
+				rotateAngle[Y]+=360.0;
+			movePlane();
 			glRotatef(-ROTATEINCOBJ,0,1,0);
+			}
 			break;
-		//D - Gira em torno do eixo z
-		case 'd':         
+
+		//E - Gira em torno do eixo Z
+		case 'e':
+			if(planeSpeed>0 && planePosition[Y]>1)
+			{
+			rotateAngle[Z]+=ROTATEINCOBJ;
+			if(rotateAngle[Z]>=360)
+				rotateAngle[Z]-=360.0;
+			movePlane();
 			glRotatef(ROTATEINCOBJ,0,0,1);
+			}
 			break;	
 		
-		//A - Gira em torno do eixo z
-		case 'a':         
+		//Q - Gira em torno do eixo Z
+		case 'q':
+			if(planeSpeed>0 && planePosition[Y]>1)
+			{
+			rotateAngle[Z]-=ROTATEINCOBJ;
+			if(rotateAngle[Z]<=-360)
+				rotateAngle[Z]+=360.0;
+			movePlane();
 			glRotatef(-ROTATEINCOBJ,0,0,1);
+			}
 			break;	
 		
 		//C - Alterna as cameras
-		case 'c':         
-			if (cameraType==ORTOGRAPHIC)
-				setPerspectiveView();
-			else
-				setOrtographicView();
-			break;
-
-		
-		case 'k':         
-			if (cameraType == PERSPECTIVE)
-			{
-				translateZ-=TRANSLATEINC;
-				setPerspectiveView();
-			}
+		case 'u':         
+			cameraType=PERSPECTIVE;
 			break;
 
 		case 'i':
-			if (cameraType == PERSPECTIVE)
-			{
-				translateZ+=TRANSLATEINC;
-				setPerspectiveView();
-			}
-			break;
-	  
-		case 'l':         
-			if (cameraType == PERSPECTIVE)
-			{
-				translateX-=TRANSLATEINC;
-				setPerspectiveView();
-			}
+			cameraType=ORTOGRAPHIC;
 			break;
 
-		case 'j':
-			if (cameraType == PERSPECTIVE)
-			{
-				translateX+=TRANSLATEINC;
-				setPerspectiveView();
-			}
+		case 'o':         
+			cameraType=THIRDPERSON;
 			break;
+
+		case 'p':         
+			cameraType=ANOTHERPLANE;
+			break;
+
+		case '+':
+			planeSpeed+=SPEEDINC;
+			if (planeSpeed>MAXSPEED)
+				planeSpeed=MAXSPEED;
+			break;
+		case '-':
+			planeSpeed-=SPEEDINC;
+			if(planeSpeed<0)
+				planeSpeed=0;
+			break;
+
   		}
 
-	
+	refreshCamera();	
 	glutPostRedisplay();
 }
 
 void specialEvent(int key, int x, int y)
 {
-	switch (key)
-	{
-		case GLUT_KEY_LEFT:
-			rotateY+=ROTATEINCCAM;
-			break;
-		case GLUT_KEY_RIGHT:
-			rotateY-=ROTATEINCCAM;
-			break;
-		case GLUT_KEY_UP:
-			rotateX+=ROTATEINCCAM;
-			break;
-		case GLUT_KEY_DOWN:
-			rotateX-=ROTATEINCCAM;
-			break;
-	}
-	setPerspectiveView();
-
-	glutPostRedisplay();
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -239,7 +331,7 @@ void setup(void)
 	glEnable(GL_LIGHT0);
 	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, posicaoLuz );
-	glLightfv(GL_LIGHT0, GL_AMBIENT,luzAmbiente);
+	//glLightfv(GL_LIGHT0, GL_AMBIENT,luzAmbiente);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, luzEspecular );
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, luzDifusa );
 
@@ -307,7 +399,10 @@ void drawScene(void)
 	glLoadIdentity();
 	glColor3f(1.0, 1.0, 0.0);
 	glTranslatef(20.0, 0.0, 20.0);
-	glutSolidCube(15.0);
+	glutSolidCube(15.0);	
+
+
+
 }
 
 void drawAirplane(void)
@@ -324,16 +419,74 @@ void drawAirplane(void)
     glmDraw(pmodel1, GLM_SMOOTH | GLM_TEXTURE);
 }
 
-void setPerspectiveView(void)
+void refreshCamera(void)
 {
+	switch(cameraType)
+	{
+		case PERSPECTIVE:
+			setPerspectiveView();
+			break;
+		
+		case ORTOGRAPHIC:
+			setOrtographicView();
+			break;
+
+		case THIRDPERSON:
+			setThirdPersonView();
+			break;
+
+		case ANOTHERPLANE:
+			setAnotherPlaneView();
+			break;
+	}
+
+}
+
+void setThirdPersonView(void)
+{
+	float upAxis;
+	if((rotateAngle[X]>90 && rotateAngle[X]<=270) || (rotateAngle[X]<-90 && rotateAngle[X]>=-270))
+		upAxis=-1;
+	else
+		upAxis=1;
+
 	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
-	cameraType=PERSPECTIVE; //seta o tipo de camera atual
 	glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
     gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 200.0);
-	glTranslatef(translateX,translateY,translateZ);
-	glRotatef(rotateY,0,1,0);
-	glRotatef(rotateX,1,0,0);
+	glTranslatef(0,0,-2);
+	gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X]+pointVector[X],planePosition[Y]+pointVector[Y], planePosition[Z]+pointVector[Z],0,upAxis,0);
+	glMatrixMode (GL_MODELVIEW);
+}
+
+void setAnotherPlaneView(void)
+{
+	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
+	glMatrixMode (GL_PROJECTION);
+    glLoadIdentity ();
+    gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 200.0);
+	glTranslatef(0,0,-10);
+	gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X],planePosition[Y]-1, planePosition[Z],0,0,1); //Camera acompanha o aviao
+	//gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X],planePosition[Y]-1, planePosition[Z],pointVector[X],0,pointVector[Z]); //Camera acompanha o aviao e gira com ele
+	glMatrixMode (GL_MODELVIEW);
+}
+
+void setPerspectiveView(void)
+{
+	float upAxis;
+	if((rotateAngle[X]>90 && rotateAngle[X]<=270) || (rotateAngle[X]<-90 && rotateAngle[X]>=-270))
+		upAxis=-1;
+	else
+		upAxis=1;
+
+	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
+	glMatrixMode (GL_PROJECTION);
+    glLoadIdentity ();
+    gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 200.0);
+	glTranslatef(0,0,1);
+	//glRotatef(rotateAngle[Z],pointVector[X],pointVector[Y],pointVector[Z]); //Tentativa de fazer a camera girar
+	//gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X]+pointVector[X],planePosition[Y]+pointVector[Y], planePosition[Z]+pointVector[Z],upVector[X],upVector[Y],upVector[Z]); //Tentativa de fazer a camera girar
+	gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X]+pointVector[X],planePosition[Y]+pointVector[Y], planePosition[Z]+pointVector[Z],0,upAxis,0);
 	glMatrixMode (GL_MODELVIEW);
 }
 
@@ -342,7 +495,6 @@ void setOrtographicView(void)
 {
 	float orthoPoints;
 	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
-	cameraType=ORTOGRAPHIC; //seta o tipo de camera atual
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
 	orthoPoints = MAXHEIGHT/2;
