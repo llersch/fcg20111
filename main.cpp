@@ -16,9 +16,9 @@
 #define Z 2
 #define PI 3.14159265
 #define FPS 17 //Esse valor e definido por 1000/60
-#define MAXSPEED 0.3 //Velocidade maxima do aviao
-#define MINSPEED 0.12 //Velocidade para alcar voo
-#define SPEEDINC 0.01 //Aceleracao
+#define MAXSPEED 0.5 //Velocidade maxima do aviao
+#define MINSPEED 0.3 //Velocidade para alcar voo
+#define SPEEDINC 0.001 //Aceleracao
 
 //area de visualizacao da camera ORTHO
 #define XMIN -100
@@ -27,7 +27,7 @@
 #define YMAX 100
 
 //altura maxima do cenario
-#define MAXHEIGHT 100
+#define MAXHEIGHT 1000
 
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 500
@@ -42,6 +42,8 @@ void motionEvent(int x, int y);
 void setup(void);
 void drawScene(void);
 void drawAirplane(void);
+void drawHangar(void);
+void drawBuilding(void);
 GLuint glmLoadTexture(char *filename, GLboolean alpha, GLboolean repeat, GLboolean filtering, GLboolean mipmaps, GLfloat *texcoordwidth, GLfloat *texcoordheight);
 void setPerspectiveView(void);
 void setOrtographicView(void);
@@ -54,6 +56,8 @@ void refreshCamera(void);
 
 //Variaveis globais:
 GLMmodel* pmodel1 = NULL;
+GLMmodel* pmodel2 = NULL;
+GLMmodel* pmodel3 = NULL;
 int cameraType = PERSPECTIVE; //inicializa a camera como perspectiva
 int viewPortHeight;
 int viewPortWidth;
@@ -62,11 +66,16 @@ GLfloat luzAmbiente[4]={0.5,0.5,0.5,0.5};	//luz ambiente
 GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor" 
 GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho" 
 GLfloat posicaoLuz[4]={50.0, 99.0, 0.0, 0.0};   // inicial
-double planePosition[3]={0,1,0};
+double planePosition[3]={0,1,697};
 double pointVector[3]={0,0,1};
 double planeSpeed=0.0;
-float rotateAngle[3]={0,0,0};
+float rotateAngle[3]={0,180,0};
 //float upVector[3]={0,1,0};
+//Texturas:
+GLuint textureSky;
+GLuint textureGrass;
+GLuint textureLane;
+GLuint textureBuilding1;
 
 int main(int argc, char** argv)
 {
@@ -78,7 +87,7 @@ int main(int argc, char** argv)
 	glutDisplayFunc(renderScene);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyEvent);
-	//glutSpecialFunc(specialEvent);
+	glutSpecialFunc(specialEvent);
 	//glutMouseFunc(mouseEvent);
 	//glutMotionFunc(motionEvent);
 	glutIdleFunc( idleFunc );	
@@ -176,10 +185,6 @@ void movePlane(void)
 
 	if (planePosition[Y]<1) //Colisao com o solo
 		planePosition[Y]=1;
-
-	
-		
-
 }
 void idleFunc(void)
 {
@@ -272,23 +277,6 @@ void keyEvent(unsigned char key, int x, int y)
 			glRotatef(-ROTATEINCOBJ,0,0,1);
 			}
 			break;	
-		
-		//C - Alterna as cameras
-		case 'u':         
-			cameraType=PERSPECTIVE;
-			break;
-
-		case 'i':
-			cameraType=ORTOGRAPHIC;
-			break;
-
-		case 'o':         
-			cameraType=THIRDPERSON;
-			break;
-
-		case 'p':         
-			cameraType=ANOTHERPLANE;
-			break;
 
 		case '+':
 			planeSpeed+=SPEEDINC;
@@ -309,6 +297,26 @@ void keyEvent(unsigned char key, int x, int y)
 
 void specialEvent(int key, int x, int y)
 {
+	switch(key)
+	{
+	case GLUT_KEY_F1:
+			cameraType=PERSPECTIVE;
+			break;
+
+	case GLUT_KEY_F2:
+			cameraType=ORTOGRAPHIC;
+			break;
+
+	case GLUT_KEY_F3:         
+			cameraType=THIRDPERSON;
+			break;
+
+	case GLUT_KEY_F4:         
+			cameraType=ANOTHERPLANE;
+			break;
+	}
+	refreshCamera();	
+	glutPostRedisplay();
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -331,9 +339,16 @@ void setup(void)
 	glEnable(GL_LIGHT0);
 	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0);
 	glLightfv(GL_LIGHT0, GL_POSITION, posicaoLuz );
-	//glLightfv(GL_LIGHT0, GL_AMBIENT,luzAmbiente);
+	glLightfv(GL_LIGHT0, GL_AMBIENT,luzAmbiente);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, luzEspecular );
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, luzDifusa );
+
+	//Carrega arquivos de textura
+	float w, h;
+	textureSky = glmLoadTexture("sky.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
+	textureGrass = glmLoadTexture("grass.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
+	textureLane = glmLoadTexture("lane.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
+	textureBuilding1 = glmLoadTexture("building1.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 
 }
 
@@ -342,10 +357,7 @@ void drawScene(void)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	float w, h;
-
 	//======================================== ESFERA ========================================
-	GLuint textureSky = glmLoadTexture("sky.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
 
@@ -356,7 +368,7 @@ void drawScene(void)
 
 	GLUquadric *qobj = gluNewQuadric();
 	gluQuadricTexture(qobj, GL_TRUE);
-	gluSphere(qobj, 100.0f, 50, 50);//se aumentar o raio da esfera, DEVE-SE aumentar as coordenadas do plano abaixo assim como a constante "MAXHEIGHT"
+	gluSphere(qobj, 1000.0f, 50, 50);//se aumentar o raio da esfera, DEVE-SE aumentar as coordenadas do plano abaixo assim como a constante "MAXHEIGHT"
 	gluDeleteQuadric(qobj);
 
 	glDisable(GL_TEXTURE_GEN_S);
@@ -364,7 +376,6 @@ void drawScene(void)
 	glDisable(GL_TEXTURE_2D);
 
 	//======================================== PLANO ========================================
-	GLuint textureGrass = glmLoadTexture("grass.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -372,10 +383,27 @@ void drawScene(void)
 	glBindTexture(GL_TEXTURE_2D, textureGrass);
 
 	glBegin(GL_QUADS);
-	glTexCoord2d(0,0); glVertex3f(-100.0f, 0.0f, 100.0f);
-	glTexCoord2d(50,0); glVertex3f(-100.0f, 0.0f, -100.0f);
-	glTexCoord2d(50,50); glVertex3f(100.0f, 0.0f, -100.0f);
-	glTexCoord2d(0,50); glVertex3f(100.0f, 0.0f, 100.0f);
+	glTexCoord2d(0,0); glVertex3f(-1000.0f, 0.0f, 1000.0f);
+	glTexCoord2d(50,0); glVertex3f(-1000.0f, 0.0f, -1000.0f);
+	glTexCoord2d(50,50); glVertex3f(1000.0f, 0.0f, -1000.0f);
+	glTexCoord2d(0,50); glVertex3f(1000.0f, 0.0f, 1000.0f);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+
+	//==============================+========== PISTA ==============================+==========
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textureLane);
+
+	glBegin(GL_QUADS);
+	glTexCoord2d(0,3); glVertex3f(5.0f,0.1f,700.f);
+	glTexCoord2d(0,0); glVertex3f(5.0f,0.1f,550.0f);
+	glTexCoord2d(1,0); glVertex3f(-5.0f,0.1f,550.0f);
+	glTexCoord2d(1,3); glVertex3f(-5.0f,0.1f,700.0f);
+
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);
@@ -399,10 +427,13 @@ void drawScene(void)
 	glLoadIdentity();
 	glColor3f(1.0, 1.0, 0.0);
 	glTranslatef(20.0, 0.0, 20.0);
-	glutSolidCube(15.0);	
+	glutSolidCube(15.0);
 
+	//glLoadIdentity();
+	//drawBuilding();
 
-
+	glLoadIdentity();
+	drawHangar();
 }
 
 void drawAirplane(void)
@@ -415,8 +446,48 @@ void drawAirplane(void)
         glmUnitize(pmodel1);
         glmFacetNormals(pmodel1);        
 		glmVertexNormals(pmodel1, 90.0);
+		glTranslatef(0.0f, 0.0f, 697.0f);
+		glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+
     }
-    glmDraw(pmodel1, GLM_SMOOTH | GLM_TEXTURE);
+		glmDraw(pmodel1, GLM_SMOOTH | GLM_TEXTURE);
+		glEnable(GL_COLOR_MATERIAL);
+}
+
+void drawHangar(void)
+{
+	//HANGAR
+	if (!pmodel2) 
+	{
+		// this is the call that actualy reads the OBJ and creates the model object
+        pmodel2 = glmReadOBJ("hangar.obj");	
+        if (!pmodel2) exit(0);
+        glmUnitize(pmodel2);
+        glmFacetNormals(pmodel2);        
+		glmVertexNormals(pmodel2, 90.0);
+    }
+	glTranslatef(0.0f, 1.0f, 697.0f);
+	glScalef(3.0f, 3.0f, 3.0f);
+	glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+    glmDraw(pmodel2, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL);
+}
+
+void drawBuilding(void)
+{
+	if (!pmodel3) 
+	{
+		// this is the call that actualy reads the OBJ and creates the model object
+        pmodel3 = glmReadOBJ("predio.obj");	
+        if (!pmodel3) exit(0);
+        glmUnitize(pmodel3);
+        glmFacetNormals(pmodel3);        
+		glmVertexNormals(pmodel3, 90.0);
+    }
+	glTranslatef(0.0f, 1.0f, 0.0f);
+	glScalef(100.0f, 100.0f, 100.0f);
+    glmDraw(pmodel3, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL);
 }
 
 void refreshCamera(void)
@@ -453,7 +524,7 @@ void setThirdPersonView(void)
 	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
 	glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
-    gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 200.0);
+    gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 2000.0);
 	glTranslatef(0,0,-2);
 	gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X]+pointVector[X],planePosition[Y]+pointVector[Y], planePosition[Z]+pointVector[Z],0,upAxis,0);
 	glMatrixMode (GL_MODELVIEW);
@@ -464,7 +535,7 @@ void setAnotherPlaneView(void)
 	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
 	glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
-    gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 200.0);
+    gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 2000.0);
 	glTranslatef(0,0,-10);
 	gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X],planePosition[Y]-1, planePosition[Z],0,0,1); //Camera acompanha o aviao
 	//gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X],planePosition[Y]-1, planePosition[Z],pointVector[X],0,pointVector[Z]); //Camera acompanha o aviao e gira com ele
@@ -482,7 +553,7 @@ void setPerspectiveView(void)
 	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
 	glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
-    gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 200.0);
+    gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 2000.0);
 	glTranslatef(0,0,1);
 	//glRotatef(rotateAngle[Z],pointVector[X],pointVector[Y],pointVector[Z]); //Tentativa de fazer a camera girar
 	//gluLookAt(planePosition[X],planePosition[Y],planePosition[Z],planePosition[X]+pointVector[X],planePosition[Y]+pointVector[Y], planePosition[Z]+pointVector[Z],upVector[X],upVector[Y],upVector[Z]); //Tentativa de fazer a camera girar
