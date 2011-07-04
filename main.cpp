@@ -144,7 +144,7 @@ void movePlane(void)
 {
 	if (planeSpeed<MINSPEED && planePosition[Y]>1) //Simulacao de gravidade
 		{
-			planePosition[Y]-=0.1;
+			planePosition[Y]-=(MINSPEED-planeSpeed)*1;
 			if( rotateAngle[X]>-90 && rotateAngle[X]<=90)
 				rotateAngle[X]-=ROTATEINCOBJ*10/100;
 			if( rotateAngle[X]<=-90 && rotateAngle[X]>90)
