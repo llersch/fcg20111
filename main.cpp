@@ -43,7 +43,11 @@ void setup(void);
 void drawScene(void);
 void drawAirplane(void);
 void drawHangar(void);
+void drawBank(void);
+void drawStadium(void);
 void drawBuilding1(void);
+void drawBuilding3(void);
+void drawBuilding4(void);
 GLuint glmLoadTexture(char *filename, GLboolean alpha, GLboolean repeat, GLboolean filtering, GLboolean mipmaps, GLfloat *texcoordwidth, GLfloat *texcoordheight);
 void setPerspectiveView(void);
 void setOrtographicView(void);
@@ -55,9 +59,6 @@ void refreshCamera(void);
 
 
 //Variaveis globais:
-GLMmodel* airplane = NULL;
-GLMmodel* hangar = NULL;
-GLMmodel* building1 = NULL;
 int cameraType = PERSPECTIVE; //inicializa a camera como perspectiva
 int viewPortHeight;
 int viewPortWidth;
@@ -71,10 +72,20 @@ double pointVector[3]={0,0,1};
 double planeSpeed=0.0;
 float rotateAngle[3]={0,180,0};
 //float upVector[3]={0,1,0};
+//Modelos:
+GLMmodel* airplane = NULL;
+GLMmodel* hangar = NULL;
+GLMmodel* bank = NULL;
+GLMmodel* building1 = NULL;
+GLMmodel* building3 = NULL;
+GLMmodel* building4 = NULL;
+GLMmodel* stadium = NULL;
+
 //Texturas:
 GLuint textureSky;
 GLuint textureGrass;
 GLuint textureLane;
+GLuint textureAsfalt;
 
 int main(int argc, char** argv)
 {
@@ -348,6 +359,7 @@ void setup(void)
 	textureSky = glmLoadTexture("textures//sky.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 	textureGrass = glmLoadTexture("textures//grass.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 	textureLane = glmLoadTexture("textures//lane.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
+	textureAsfalt = glmLoadTexture("textures//asfalt.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 }
 
 void drawScene(void)
@@ -389,7 +401,7 @@ void drawScene(void)
 
 	glDisable(GL_TEXTURE_2D);
 
-	//==============================+========== PISTA ==============================+==========
+	//========================================= PISTA =========================================
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -405,31 +417,79 @@ void drawScene(void)
 
 	glDisable(GL_TEXTURE_2D);
 
+	//========================================= CIDADE1 =========================================
+	
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textureAsfalt);
+
+	glBegin(GL_QUADS);
+	glTexCoord2d(0,0); glVertex3f(-150.0f,0.1f,-200.f);
+	glTexCoord2d(5,0); glVertex3f(-250.0f,0.1f,-200.0f);
+	glTexCoord2d(5,5); glVertex3f(-250.0f,0.1f,-300.0f);
+	glTexCoord2d(0,5); glVertex3f(-150.0f,0.1f,-300.0f);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+
 	//======================================== PREDIOS ========================================
 	glLoadIdentity();
-	glColor3f(1.0, 0.0, 0.0);
-	glTranslatef(-20.0, 0.0, -20.0);
-	glutSolidCube(15.0);
-
-	glLoadIdentity();
-	glColor3f(0.0, 1.0, 0.0);
-	glTranslatef(-20.0, 0.0, 20.0);
-	glutSolidCube(15.0);
-
-	glLoadIdentity();
-	glColor3f(0.0, 0.0, 1.0);
-	glTranslatef(20.0, 0.0, -20.0);
-	glutSolidCube(15.0);
-
-	glLoadIdentity();
-	glColor3f(1.0, 1.0, 0.0);
-	glTranslatef(20.0, 0.0, 20.0);
-	glutSolidCube(15.0);
-
-	glLoadIdentity();
+	glTranslatef(-160.0f, 7.0f, -290.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
 	drawBuilding1();
 
 	glLoadIdentity();
+	glTranslatef(-240.0f, 7.0f, -250.0f);
+	glRotatef(45, 0.0f, 1.0f, 0.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
+	drawBuilding1();
+
+	glLoadIdentity();
+	glTranslatef(-160.0f, 7.0f, -210.0f);
+	glRotatef(-20, 0.0f, 1.0f, 0.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
+	drawBuilding1();
+
+	glLoadIdentity();
+	glTranslatef(-160.0f, 7.0f, -250.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
+	drawBuilding3();
+
+	glLoadIdentity();
+	glTranslatef(-240.0f, 7.0f, -210.0f);
+	glRotatef(45, 0.0f, 1.0f, 0.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
+	drawBuilding3();
+
+	glLoadIdentity();
+	glTranslatef(-225.0f, 7.0f, -275.0f);
+	glRotatef(-20, 0.0f, 1.0f, 0.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
+	drawBuilding3();
+
+	glLoadIdentity();
+	glTranslatef(-200.0f, 7.0f, -280.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
+	drawBank();
+
+	glLoadIdentity();
+	glTranslatef(-225.0f, 7.0f, -225.0f);
+	glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
+	drawBank();
+
+	glLoadIdentity();
+	glTranslatef(-240.0f, 7.0f, -290.0f);
+	glRotatef(-20.0f, 0.0f, 1.0f, 0.0f);
+	glScalef(7.0f, 7.0f, 7.0f);
+	drawBank();
+
+	glLoadIdentity();
+	glTranslatef(0.0f, 1.0f, 697.0f);
+	glScalef(3.0f, 3.0f, 3.0f);
+	glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
 	drawHangar();
 }
 
@@ -450,20 +510,44 @@ void drawAirplane(void)
 
 void drawHangar(void)
 {
-	//HANGAR
 	if (!hangar) 
 	{
-		// this is the call that actualy reads the OBJ and creates the model object
         hangar = glmReadOBJ("models//hangar//hangar.obj");	
         if (!hangar) exit(0);
         glmUnitize(hangar);
         glmFacetNormals(hangar);        
 		glmVertexNormals(hangar, 90.0);
     }
-	glTranslatef(0.0f, 1.0f, 697.0f);
-	glScalef(3.0f, 3.0f, 3.0f);
-	glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
     glmDraw(hangar, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL);
+}
+
+void drawBank(void)
+{
+	if (!bank) 
+	{
+        bank = glmReadOBJ("models//bank//bank.obj");	
+        if (!bank) exit(0);
+        glmUnitize(bank);
+        glmFacetNormals(bank);        
+		glmVertexNormals(bank, 90.0);
+    }
+
+    glmDraw(bank, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL);
+}
+
+void drawStadium(void)
+{
+	if (!stadium) 
+	{
+        stadium = glmReadOBJ("models//stadium//stadium.obj");	
+        if (!stadium) exit(0);
+        glmUnitize(stadium);
+        glmFacetNormals(stadium);        
+		glmVertexNormals(stadium, 90.0);
+    }
+    glmDraw(stadium, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
 	glEnable(GL_COLOR_MATERIAL);
 }
 
@@ -471,16 +555,41 @@ void drawBuilding1(void)
 {
 	if (!building1) 
 	{
-		// this is the call that actualy reads the OBJ and creates the model object
         building1 = glmReadOBJ("models//building1//equitable.obj");	
         if (!building1) exit(0);
         glmUnitize(building1);
         glmFacetNormals(building1);        
 		glmVertexNormals(building1, 90.0);
     }
-	glTranslatef(0.0f, 1.0f, 0.0f);
-	glScalef(10.0f, 10.0f, 10.0f);
     glmDraw(building1, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL);
+}
+
+void drawBuilding3(void)
+{
+	if (!building3) 
+	{
+        building3 = glmReadOBJ("models//building3//building3.obj");	
+        if (!building3) exit(0);
+        glmUnitize(building3);
+        glmFacetNormals(building3);        
+		glmVertexNormals(building3, 90.0);
+    }
+    glmDraw(building3, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+	glEnable(GL_COLOR_MATERIAL);
+}
+
+void drawBuilding4(void)
+{
+	if (!building4) 
+	{
+        building4 = glmReadOBJ("models//building4//building4.obj");	
+        if (!building4) exit(0);
+        glmUnitize(building4);
+        glmFacetNormals(building4);        
+		glmVertexNormals(building4, 90.0);
+    }
+    glmDraw(building4, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
 	glEnable(GL_COLOR_MATERIAL);
 }
 
