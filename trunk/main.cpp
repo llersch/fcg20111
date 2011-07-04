@@ -64,7 +64,7 @@ int cameraType = PERSPECTIVE; //inicializa a camera como perspectiva
 int viewPortHeight;
 int viewPortWidth;
 int firstTime=1;
-GLfloat luzAmbiente[4]={0.5,0.5,0.5,0.5};	//luz ambiente 
+GLfloat luzAmbiente[4]={0.25,0.25,0.25,0.25};	//luz ambiente 
 GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor" 
 GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho" 
 GLfloat posicaoLuz[4]={50.0, 99.0, 0.0, 0.0};   // inicial
@@ -434,9 +434,9 @@ void drawScene(void)
 
 	glBegin(GL_QUADS);
 	glTexCoord2d(0,0); glVertex3f(-400.0f,0.1f,-70.f);
-	glTexCoord2d(5,0); glVertex3f(500.0f,0.1f,-70.0f);
-	glTexCoord2d(5,5); glVertex3f(500.0f,0.1f,-400.0f);
-	glTexCoord2d(0,5); glVertex3f(-400.0f,0.1f,-400.0f);
+	glTexCoord2d(20,0); glVertex3f(500.0f,0.1f,-70.0f);
+	glTexCoord2d(20,20); glVertex3f(500.0f,0.1f,-400.0f);
+	glTexCoord2d(0,20); glVertex3f(-400.0f,0.1f,-400.0f);
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);
@@ -494,17 +494,6 @@ void drawScene(void)
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBank();
 
-
-
-
-
-
-
-
-
-
-
-
 	//======================================== PREDIOS ========================================
 	
 	glLoadIdentity();
@@ -557,17 +546,6 @@ void drawScene(void)
 	glRotatef(-20.0f, 0.0f, 1.0f, 0.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBank();
-
-
-
-
-
-
-
-
-
-
-
 
 	glLoadIdentity();
 	glTranslatef(0.0f, 1.0f, 697.0f);
