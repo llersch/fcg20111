@@ -1,3 +1,5 @@
+#pragma once
+
 /*    
       glm.h
       Nate Robins, 1997, 2000
@@ -9,13 +11,17 @@
       preservation of edges, welding redundant vertices & texture
       coordinate generation (spheremap and planar projections) + more.
 
-      Improved version:
-	  Tudor Carean - April 2008 - added texture support
+      Improved version of GLM - 08.05.2008 Tudor Carean
+	  - Added support for textures and loading callbacks
 
+	  Improved version of GLM - 07.06.2010 Ricrdo Gomes da Silva
+	  - Added support for multiple textures inside one object (each triangle has its own material)
+	  - Fixed texture handling errors
+	  - Fixed the problem that happens when you load faces with texture and faces without texture
  */
 
 
-#include <GL/glut.h>
+#include "GL/glut.h"
 
 
 #ifndef M_PI
@@ -54,6 +60,8 @@ typedef struct _GLMtriangle {
   //GLuint nrvecini;
   GLuint vecini[3];
   bool visible;
+  bool texturized;				/* is this triangle texturized or not? (Ricardo) */
+  GLuint material;				/* material index for this triangle (Ricardo) */
 } GLMtriangle;
 
 //adaugat pentru suport texturi
