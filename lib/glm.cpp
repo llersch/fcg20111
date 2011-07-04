@@ -10,10 +10,14 @@
       coordinate generation (spheremap and planar projections) + more.
 	
       Improved version of GLM - 08.05.2008 Tudor Carean
-	  Added support for textures and loading callbacks
+	  - Added support for textures and loading callbacks
+
+	  Improved version of GLM - 07.06.2010 Ricrdo Gomes da Silva
+	  - Added support for multiple textures inside one object (each triangle has its own material)
+	  - Fixed texture handling errors
+	  - Fixed the problem that happens when you load faces with texture and faces without texture
 */
 
-#include "stdafx.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +25,7 @@
 #include <assert.h>
 #include "glm.h"
 
+#pragma warning(disable: 4996 4101)
 
 //#define DebugVisibleSurfaces
 
@@ -260,8 +265,9 @@ int glmFindOrAddTexture(GLMmodel* model, char* name,mycallback *call)
     }
 	char afis[80];
 	sprintf(afis,"Loading Textures (%s )...",name);
-	if (call)
-	{
+	
+	// Fixed: reading call pointer is allowed only when call is not null (Ricardo)
+	if (call) {
 		int procent = ((float)((float)model->numtextures*30/total_textures)/100)*(call->end-call->start)+call->start;
 		call->loadcallback(procent,afis); // textures represent 30% from the model (just saying :))
 	}
@@ -672,7 +678,7 @@ static GLvoid glmSecondPass(GLMmodel* model, FILE* file, mycallback *call)
     allocated arrays */
     numvertices = numnormals = numtexcoords = 1;
     numtriangles = 0;
-    material = 0;
+    material = -1;
     while(fscanf(file, "%s", buf) != EOF) {
         switch(buf[0]) {
         case '#':               /* comment */
@@ -728,14 +734,19 @@ static GLvoid glmSecondPass(GLMmodel* model, FILE* file, mycallback *call)
                 break;
             case 'f':               /* face */
                 v = n = t = 0;
-		T(numtriangles).findex = -1; // ???
-		T(numtriangles).vecini[0]=-1;
-		T(numtriangles).vecini[1]=-1;
-		T(numtriangles).vecini[2]=-1;
+				T(numtriangles).findex = -1; // ???
+				T(numtriangles).vecini[0]=-1;
+				T(numtriangles).vecini[1]=-1;
+				T(numtriangles).vecini[2]=-1;
+				// Copy material index from current group index (or whatever that is) (Ricardo)
+				T(numtriangles).material = material;
                 fscanf(file, "%s", buf);
                 /* can be one of %d, %d//%d, %d/%d, %d/%d/%d %d//%d */
                 if (strstr(buf, "//")) {
-                    /* v//n */
+					// No textures for this triangle (Ricardo)
+					T(numtriangles).texturized = false;
+
+					/* v//n */
                     sscanf(buf, "%d//%d", &v, &n);
                     T(numtriangles).vindices[0] = v;
 					if (n== 181228)
@@ -751,7 +762,7 @@ static GLvoid glmSecondPass(GLMmodel* model, FILE* file, mycallback *call)
                     T(numtriangles).nindices[2] = n;
                     group->triangles[group->numtriangles++] = numtriangles;
                     numtriangles++;
-                    while(fscanf(file, "%d//%d", &v, &n) > 0) {						
+                    while(fscanf(file, "%d//%d", &v, &n) > 0) {
                         T(numtriangles).vindices[0] = T(numtriangles-1).vindices[0];
                         T(numtriangles).nindices[0] = T(numtriangles-1).nindices[0];
                         T(numtriangles).vindices[1] = T(numtriangles-1).vindices[2];
@@ -763,7 +774,9 @@ static GLvoid glmSecondPass(GLMmodel* model, FILE* file, mycallback *call)
                     }
                 } else if (sscanf(buf, "%d/%d/%d", &v, &t, &n) == 3) {
                     /* v/t/n */
-					
+					// Textures allowed for this triangle (Ricardo)
+					T(numtriangles).texturized = true;
+
                     T(numtriangles).vindices[0] = v;
                     T(numtriangles).tindices[0] = t;
                     T(numtriangles).nindices[0] = n;
@@ -792,7 +805,10 @@ static GLvoid glmSecondPass(GLMmodel* model, FILE* file, mycallback *call)
                         numtriangles++;
                     }
                 } else if (sscanf(buf, "%d/%d", &v, &t) == 2) {
-                    /* v/t */					
+                    /* v/t */
+					// Textures allowed for this triangle (Ricardo)
+					T(numtriangles).texturized = true;
+
                     T(numtriangles).vindices[0] = v;
                     T(numtriangles).tindices[0] = t;
                     fscanf(file, "%d/%d", &v, &t);
@@ -1758,50 +1774,69 @@ GLvoid glmDraw(GLMmodel* model, GLuint mode,char *drawonly)
 				continue;
 			}		
 		
-		material = &model->materials[group->material];
-		if (material)
-			IDTextura = material->IDTextura;
-		else IDTextura=-1;
         
-		if (mode & GLM_MATERIAL) 
-		{            
-            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material->ambient);
-            glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material->diffuse);
-            glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material->specular);
-            glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material->shininess);
-        }
-
-		if (mode & GLM_TEXTURE) 
-		{				
-			if(IDTextura == -1)
-				glBindTexture(GL_TEXTURE_2D, 0);
-			else
-				glBindTexture(GL_TEXTURE_2D, model->textures[IDTextura].id);		
-		}
-        
-        if (mode & GLM_COLOR) {
-            glColor3fv(material->diffuse);
-        }
-        
-        glBegin(GL_TRIANGLES);
         for (i = 0; i < group->numtriangles; i++) {
             triangle = &T(group->triangles[i]);
 #ifdef DebugVisibleSurfaces
 			if (!triangle->visible) continue;
 #endif
+			// --- Moved block: GLM_MATERIAL and GLM_TEXTURE are definied now inside the triangle, not
+			// inside the group. (Ricardo)
+			//material = &model->materials[group->material];
+			
+			// If there's a material to work with...
+			if (triangle->material != -1) {
+				// Enable material properties and also load the texture ID
+				material = &model->materials[triangle->material];
+				if (material) {
+					IDTextura = material->IDTextura;
+				} else {
+					IDTextura = -1;
+				}
+
+				// Load material information
+				if (mode & GLM_MATERIAL) 
+				{            
+					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, material->ambient);
+					glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material->diffuse);
+					glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material->specular);
+					glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, material->shininess);
+				}
+
+				// Load texture information, binding the current texture to the new one
+				if (mode & GLM_TEXTURE) 
+				{				
+					if(IDTextura == -1)
+						glBindTexture(GL_TEXTURE_2D, 0);
+					else
+						glBindTexture(GL_TEXTURE_2D, model->textures[IDTextura].id);		
+				}
+
+				// Load color information
+				if (mode & GLM_COLOR) {
+					glColor3fv(material->diffuse);
+				}
+			}
+
+			// --- End of moved block (Ricardo)
+
+			// Start drawing using
+			glBegin(GL_TRIANGLES);
+
             if (mode & GLM_FLAT)
                 glNormal3fv(&model->facetnorms[3 * triangle->findex]);
             
             if (mode & GLM_SMOOTH)
                 glNormal3fv(&model->normals[3 * triangle->nindices[0]]);
-            if (mode & GLM_TEXTURE)
+			// Draw textures only if the triangle is texturized
+            if ((mode & GLM_TEXTURE) && (triangle->texturized))
                 glTexCoord2fv(&model->texcoords[2 * triangle->tindices[0]]);
             glVertex3fv(&model->vertices[3 * triangle->vindices[0]]);
             
             if (mode & GLM_SMOOTH)
                 glNormal3fv(&model->normals[3 * triangle->nindices[1]]);
-            if (mode & GLM_TEXTURE)
-	    {
+            if ((mode & GLM_TEXTURE) && (triangle->texturized))
+			{
                 //if (IDTextura==-1) printf("Warning: GLM_TEXTURE este on dar nu este setata nici o textura in material!");
                 glTexCoord2fv(&model->texcoords[2 * triangle->tindices[1]]);
             }
@@ -1809,14 +1844,16 @@ GLvoid glmDraw(GLMmodel* model, GLuint mode,char *drawonly)
             
             if (mode & GLM_SMOOTH)
                 glNormal3fv(&model->normals[3 * triangle->nindices[2]]);
-            if (mode & GLM_TEXTURE)
+            if ((mode & GLM_TEXTURE) && (triangle->texturized))
                 glTexCoord2fv(&model->texcoords[2 * triangle->tindices[2]]);
             glVertex3fv(&model->vertices[3 * triangle->vindices[2]]);
             
-        }
-        glEnd();
-        
-        group = group->next;
+			// End drawing
+			glEnd();
+		}
+
+		// Next group
+		group = group->next;
     }
 }
 
