@@ -43,7 +43,7 @@ void setup(void);
 void drawScene(void);
 void drawAirplane(void);
 void drawHangar(void);
-void drawBuilding(void);
+void drawBuilding1(void);
 GLuint glmLoadTexture(char *filename, GLboolean alpha, GLboolean repeat, GLboolean filtering, GLboolean mipmaps, GLfloat *texcoordwidth, GLfloat *texcoordheight);
 void setPerspectiveView(void);
 void setOrtographicView(void);
@@ -55,14 +55,14 @@ void refreshCamera(void);
 
 
 //Variaveis globais:
-GLMmodel* pmodel1 = NULL;
-GLMmodel* pmodel2 = NULL;
-GLMmodel* pmodel3 = NULL;
+GLMmodel* airplane = NULL;
+GLMmodel* hangar = NULL;
+GLMmodel* building1 = NULL;
 int cameraType = PERSPECTIVE; //inicializa a camera como perspectiva
 int viewPortHeight;
 int viewPortWidth;
 int firstTime=1;
-GLfloat luzAmbiente[4]={0.5,0.5,0.5,0.5};	//luz ambiente 
+GLfloat luzAmbiente[4]={0.25,0.25,0.25,0.25};	//luz ambiente 
 GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor" 
 GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho" 
 GLfloat posicaoLuz[4]={50.0, 99.0, 0.0, 0.0};   // inicial
@@ -75,7 +75,6 @@ float rotateAngle[3]={0,180,0};
 GLuint textureSky;
 GLuint textureGrass;
 GLuint textureLane;
-GLuint textureBuilding1;
 
 int main(int argc, char** argv)
 {
@@ -332,6 +331,7 @@ void setup(void)
 	glClearColor (1.0f, 1.0f, 1.0f, 1.0f);   
 	glShadeModel (GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
    
 	//ILUMINACAO
 	glEnable(GL_LIGHTING);
@@ -345,11 +345,9 @@ void setup(void)
 
 	//Carrega arquivos de textura
 	float w, h;
-	textureSky = glmLoadTexture("sky.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
-	textureGrass = glmLoadTexture("grass.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
-	textureLane = glmLoadTexture("lane.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
-	textureBuilding1 = glmLoadTexture("building1.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
-
+	textureSky = glmLoadTexture("textures//sky.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
+	textureGrass = glmLoadTexture("textures//grass.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
+	textureLane = glmLoadTexture("textures//lane.tga", GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE, &w, &h);
 }
 
 void drawScene(void)
@@ -403,7 +401,6 @@ void drawScene(void)
 	glTexCoord2d(0,0); glVertex3f(5.0f,0.1f,550.0f);
 	glTexCoord2d(1,0); glVertex3f(-5.0f,0.1f,550.0f);
 	glTexCoord2d(1,3); glVertex3f(-5.0f,0.1f,700.0f);
-
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);
@@ -429,8 +426,8 @@ void drawScene(void)
 	glTranslatef(20.0, 0.0, 20.0);
 	glutSolidCube(15.0);
 
-	//glLoadIdentity();
-	//drawBuilding();
+	glLoadIdentity();
+	drawBuilding1();
 
 	glLoadIdentity();
 	drawHangar();
@@ -438,55 +435,52 @@ void drawScene(void)
 
 void drawAirplane(void)
 {
-	if (!pmodel1) 
+	if (!airplane) 
 	{
 		// this is the call that actualy reads the OBJ and creates the model object
-        pmodel1 = glmReadOBJ("airplane.obj");	
-        if (!pmodel1) exit(0);
-        glmUnitize(pmodel1);
-        glmFacetNormals(pmodel1);        
-		glmVertexNormals(pmodel1, 90.0);
-		glTranslatef(0.0f, 0.0f, 697.0f);
-		glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-
+        airplane = glmReadOBJ("models//airplane//airplane.obj");	
+        if (!airplane) exit(0);
+        glmUnitize(airplane);
+        glmFacetNormals(airplane);        
+		glmVertexNormals(airplane, 90.0);
     }
-		glmDraw(pmodel1, GLM_SMOOTH | GLM_TEXTURE);
+		glmDraw(airplane, GLM_SMOOTH | GLM_TEXTURE);
 		glEnable(GL_COLOR_MATERIAL);
 }
 
 void drawHangar(void)
 {
 	//HANGAR
-	if (!pmodel2) 
+	if (!hangar) 
 	{
 		// this is the call that actualy reads the OBJ and creates the model object
-        pmodel2 = glmReadOBJ("hangar.obj");	
-        if (!pmodel2) exit(0);
-        glmUnitize(pmodel2);
-        glmFacetNormals(pmodel2);        
-		glmVertexNormals(pmodel2, 90.0);
+        hangar = glmReadOBJ("models//hangar//hangar.obj");	
+        if (!hangar) exit(0);
+        glmUnitize(hangar);
+        glmFacetNormals(hangar);        
+		glmVertexNormals(hangar, 90.0);
     }
 	glTranslatef(0.0f, 1.0f, 697.0f);
 	glScalef(3.0f, 3.0f, 3.0f);
 	glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-    glmDraw(pmodel2, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+    glmDraw(hangar, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
 	glEnable(GL_COLOR_MATERIAL);
 }
 
-void drawBuilding(void)
+void drawBuilding1(void)
 {
-	if (!pmodel3) 
+	if (!building1) 
 	{
 		// this is the call that actualy reads the OBJ and creates the model object
-        pmodel3 = glmReadOBJ("predio.obj");	
-        if (!pmodel3) exit(0);
-        glmUnitize(pmodel3);
-        glmFacetNormals(pmodel3);        
-		glmVertexNormals(pmodel3, 90.0);
+        building1 = glmReadOBJ("models//building1//equitable.obj");	
+        if (!building1) exit(0);
+        glmUnitize(building1);
+        glmFacetNormals(building1);        
+		glmVertexNormals(building1, 90.0);
     }
 	glTranslatef(0.0f, 1.0f, 0.0f);
-	glScalef(100.0f, 100.0f, 100.0f);
-    glmDraw(pmodel3, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
+	glScalef(10.0f, 10.0f, 10.0f);
+    glmDraw(building1, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
 	glEnable(GL_COLOR_MATERIAL);
 }
 
