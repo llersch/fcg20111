@@ -433,10 +433,10 @@ void drawScene(void)
 	glBindTexture(GL_TEXTURE_2D, textureAsfalt);
 
 	glBegin(GL_QUADS);
-	glTexCoord2d(0,0); glVertex3f(-50.0f,0.1f,-70.f);
-	glTexCoord2d(5,0); glVertex3f(-350.0f,0.1f,-70.0f);
-	glTexCoord2d(5,5); glVertex3f(-350.0f,0.1f,-400.0f);
-	glTexCoord2d(0,5); glVertex3f(-50.0f,0.1f,-400.0f);
+	glTexCoord2d(0,0); glVertex3f(-400.0f,0.1f,-70.f);
+	glTexCoord2d(5,0); glVertex3f(500.0f,0.1f,-70.0f);
+	glTexCoord2d(5,5); glVertex3f(500.0f,0.1f,-400.0f);
+	glTexCoord2d(0,5); glVertex3f(-400.0f,0.1f,-400.0f);
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);
@@ -493,6 +493,81 @@ void drawScene(void)
 	glRotatef(-20.0f, 0.0f, 1.0f, 0.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBank();
+
+
+
+
+
+
+
+
+
+
+
+
+	//======================================== PREDIOS ========================================
+	
+	glLoadIdentity();
+	glTranslatef(200.0f, 7.0f, -280.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBuilding1();
+
+	glLoadIdentity();
+	glTranslatef(180.0f, 7.0f, -150.0f);	
+	glRotatef(45, 0.0f, 1.0f, 0.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBuilding1();
+
+	glLoadIdentity();
+	glTranslatef(340.0f, 7.0f, -210.0f);
+	glRotatef(-20, 0.0f, 1.0f, 0.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBuilding1();
+
+	glLoadIdentity();
+	glTranslatef(340.0f, 7.0f, -290.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBuilding3();
+
+	glLoadIdentity();
+	glTranslatef(415.0f, 7.0f, -200.0f);
+	glRotatef(45, 0.0f, 1.0f, 0.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBuilding3();
+
+	glLoadIdentity();
+	glTranslatef(260.0f, 7.0f, -250.0f);	
+	glRotatef(-20, 0.0f, 1.0f, 0.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBuilding3();
+
+	glLoadIdentity();
+	glTranslatef(260.0f, 7.0f, -380.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBank();
+
+	glLoadIdentity();
+	glTranslatef(320.0f, 7.0f, -120.0f);	
+	glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBank();
+
+	glLoadIdentity();
+	glTranslatef(410.0f, 7.0f, -320.0f);
+	glRotatef(-20.0f, 0.0f, 1.0f, 0.0f);
+	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
+	drawBank();
+
+
+
+
+
+
+
+
+
+
+
 
 	glLoadIdentity();
 	glTranslatef(0.0f, 1.0f, 697.0f);
