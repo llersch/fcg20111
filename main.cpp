@@ -63,7 +63,7 @@ int cameraType = PERSPECTIVE; //inicializa a camera como perspectiva
 int viewPortHeight;
 int viewPortWidth;
 int firstTime=1;
-GLfloat luzAmbiente[4]={0.25,0.25,0.25,0.25};	//luz ambiente 
+GLfloat luzAmbiente[4]={0.5,0.5,0.5,0.5};	//luz ambiente 
 GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor" 
 GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho" 
 GLfloat posicaoLuz[4]={50.0, 99.0, 0.0, 0.0};   // inicial
