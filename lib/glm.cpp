@@ -13,7 +13,7 @@
 	  Added support for textures and loading callbacks
 */
 
-#include <stdafx.h>
+#include "stdafx.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -260,8 +260,11 @@ int glmFindOrAddTexture(GLMmodel* model, char* name,mycallback *call)
     }
 	char afis[80];
 	sprintf(afis,"Loading Textures (%s )...",name);
-	int procent = ((float)((float)model->numtextures*30/total_textures)/100)*(call->end-call->start)+call->start;
-	if (call) call->loadcallback(procent,afis); // textures represent 30% from the model (just saying :))
+	if (call)
+	{
+		int procent = ((float)((float)model->numtextures*30/total_textures)/100)*(call->end-call->start)+call->start;
+		call->loadcallback(procent,afis); // textures represent 30% from the model (just saying :))
+	}
 	if (strstr(name,":\\"))
 	{
 		filename = (char*)malloc(sizeof(char) * (strlen(name) + 1));
