@@ -1,8 +1,8 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <GL/glut.h>
-#include "lib/stdafx.h"
-#include "lib/glm.h"
+#include "../lib/stdafx.h"
+#include "../lib/glm.h"
 #include <math.h>
 
 //CONSTANTES
@@ -64,9 +64,9 @@ int cameraType = PERSPECTIVE; //inicializa a camera como perspectiva
 int viewPortHeight;
 int viewPortWidth;
 int firstTime=1;
-GLfloat luzAmbiente[4]={0.25,0.25,0.25,0.25};	//luz ambiente 
-GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor" 
-GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho" 
+GLfloat luzAmbiente[4]={0.25,0.25,0.25,0.25};	//luz ambiente
+GLfloat luzDifusa[4]={1.0,1.0,1.0,1.0};		 // "cor"
+GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};// "brilho"
 GLfloat posicaoLuz[4]={50.0, 99.0, 0.0, 0.0};   // inicial
 double planePosition[3]={0,1,697};
 double pointVector[3]={0,0,1};
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 	glutSpecialFunc(specialEvent);
 	//glutMouseFunc(mouseEvent);
 	//glutMotionFunc(motionEvent);
-	glutIdleFunc( idleFunc );	
+	glutIdleFunc( idleFunc );
 
 	setup();
 
@@ -125,9 +125,9 @@ void renderScene(void)
 	glRotatef(-rotateAngle[X],1,0,0);
 	glRotatef(rotateAngle[Z],0,0,1);
 	drawAirplane();
-	
+
 	//Desenha a Cena
-	glPushMatrix();	
+	glPushMatrix();
 	glLoadIdentity();
 	drawScene();
 	glPopMatrix();
@@ -168,7 +168,7 @@ void movePlane(void)
 //	upVector[Y]=cos(rotateAngle[Z]*PI/180)*cos(rotateAngle[X]*PI/180);
 //	upVector[Z]=sin(rotateAngle[X]*PI/180)*sin(rotateAngle[Y]*PI/180);
 
-	
+
 	//Set new plane Point Vector
 	//pointVector[X]=cos(rotateAngle[Z]*PI/180)*sin(rotateAngle[Y]*PI/180);
 	//pointVector[Y]=sin(rotateAngle[X]*PI/180)*cos(rotateAngle[Z]*PI/180);
@@ -206,13 +206,13 @@ void idleFunc(void)
 }
 void keyEvent(unsigned char key, int x, int y)
 {
-	switch (key) 
+	switch (key)
 		{
 		//ESC - encerra o programa
 		case 27:
 			exit(0);
 			break;
-	
+
 
 		//W - Gira em torno do eixo x
 		case 'W':
@@ -241,7 +241,7 @@ void keyEvent(unsigned char key, int x, int y)
 				}
 
 			break;
-	  
+
 		//A - Gira em torno do eixo Y
 		case 'A':
 		case 'a':
@@ -280,8 +280,8 @@ void keyEvent(unsigned char key, int x, int y)
 			movePlane();
 			glRotatef(ROTATEINCOBJ,0,0,1);
 			}
-			break;	
-		
+			break;
+
 		//Q - Gira em torno do eixo Z
 		case 'Q':
 		case 'q':
@@ -293,7 +293,7 @@ void keyEvent(unsigned char key, int x, int y)
 			movePlane();
 			glRotatef(-ROTATEINCOBJ,0,0,1);
 			}
-			break;	
+			break;
 
 		case '+':
 			planeSpeed+=SPEEDINC;
@@ -308,7 +308,7 @@ void keyEvent(unsigned char key, int x, int y)
 
   		}
 
-	refreshCamera();	
+	refreshCamera();
 	glutPostRedisplay();
 }
 
@@ -324,15 +324,15 @@ void specialEvent(int key, int x, int y)
 			cameraType=ORTOGRAPHIC;
 			break;
 
-	case GLUT_KEY_F3:         
+	case GLUT_KEY_F3:
 			cameraType=THIRDPERSON;
 			break;
 
-	case GLUT_KEY_F4:         
+	case GLUT_KEY_F4:
 			cameraType=ANOTHERPLANE;
 			break;
 	}
-	refreshCamera();	
+	refreshCamera();
 	glutPostRedisplay();
 }
 
@@ -346,11 +346,11 @@ void motionEvent(int x, int y)
 
 void setup(void)
 {
-	glClearColor (1.0f, 1.0f, 1.0f, 1.0f);   
+	glClearColor (1.0f, 1.0f, 1.0f, 1.0f);
 	glShadeModel (GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
-   
+
 	//ILUMINACAO
 	glEnable(GL_LIGHTING);
 	glEnable(GL_COLOR_MATERIAL);
@@ -425,7 +425,7 @@ void drawScene(void)
 	glDisable(GL_TEXTURE_2D);
 
 	//========================================= CIDADE1 =========================================
-	
+
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -442,14 +442,14 @@ void drawScene(void)
 	glDisable(GL_TEXTURE_2D);
 
 	//======================================== PREDIOS ========================================
-	
+
 	glLoadIdentity();
 	glTranslatef(-300.0f, 7.0f, -280.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBuilding1();
 
 	glLoadIdentity();
-	glTranslatef(-320.0f, 7.0f, -150.0f);	
+	glTranslatef(-320.0f, 7.0f, -150.0f);
 	glRotatef(45, 0.0f, 1.0f, 0.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBuilding1();
@@ -472,7 +472,7 @@ void drawScene(void)
 	drawBuilding3();
 
 	glLoadIdentity();
-	glTranslatef(-240.0f, 7.0f, -250.0f);	
+	glTranslatef(-240.0f, 7.0f, -250.0f);
 	glRotatef(-20, 0.0f, 1.0f, 0.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBuilding3();
@@ -483,7 +483,7 @@ void drawScene(void)
 	drawBank();
 
 	glLoadIdentity();
-	glTranslatef(-180.0f, 7.0f, -120.0f);	
+	glTranslatef(-180.0f, 7.0f, -120.0f);
 	glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBank();
@@ -495,14 +495,14 @@ void drawScene(void)
 	drawBank();
 
 	//======================================== PREDIOS ========================================
-	
+
 	glLoadIdentity();
 	glTranslatef(200.0f, 7.0f, -280.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBuilding1();
 
 	glLoadIdentity();
-	glTranslatef(180.0f, 7.0f, -150.0f);	
+	glTranslatef(180.0f, 7.0f, -150.0f);
 	glRotatef(45, 0.0f, 1.0f, 0.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBuilding1();
@@ -525,7 +525,7 @@ void drawScene(void)
 	drawBuilding3();
 
 	glLoadIdentity();
-	glTranslatef(260.0f, 7.0f, -250.0f);	
+	glTranslatef(260.0f, 7.0f, -250.0f);
 	glRotatef(-20, 0.0f, 1.0f, 0.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBuilding3();
@@ -536,7 +536,7 @@ void drawScene(void)
 	drawBank();
 
 	glLoadIdentity();
-	glTranslatef(320.0f, 7.0f, -120.0f);	
+	glTranslatef(320.0f, 7.0f, -120.0f);
 	glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
 	glScalef(BUILDINGSCALE, BUILDINGSCALE, BUILDINGSCALE);
 	drawBank();
@@ -556,13 +556,13 @@ void drawScene(void)
 
 void drawAirplane(void)
 {
-	if (!airplane) 
+	if (!airplane)
 	{
 		// this is the call that actualy reads the OBJ and creates the model object
-        airplane = glmReadOBJ("models//airplane//airplane.obj");	
+        airplane = glmReadOBJ("models//airplane//airplane.obj");
         if (!airplane) exit(0);
         glmUnitize(airplane);
-        glmFacetNormals(airplane);        
+        glmFacetNormals(airplane);
 		glmVertexNormals(airplane, 90.0);
     }
 		glmDraw(airplane, GLM_SMOOTH | GLM_TEXTURE);
@@ -571,12 +571,12 @@ void drawAirplane(void)
 
 void drawHangar(void)
 {
-	if (!hangar) 
+	if (!hangar)
 	{
-        hangar = glmReadOBJ("models//hangar//hangar.obj");	
+        hangar = glmReadOBJ("models//hangar//hangar.obj");
         if (!hangar) exit(0);
         glmUnitize(hangar);
-        glmFacetNormals(hangar);        
+        glmFacetNormals(hangar);
 		glmVertexNormals(hangar, 90.0);
     }
     glmDraw(hangar, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
@@ -585,12 +585,12 @@ void drawHangar(void)
 
 void drawBank(void)
 {
-	if (!bank) 
+	if (!bank)
 	{
-        bank = glmReadOBJ("models//bank//bank.obj");	
+        bank = glmReadOBJ("models//bank//bank.obj");
         if (!bank) exit(0);
         glmUnitize(bank);
-        glmFacetNormals(bank);        
+        glmFacetNormals(bank);
 		glmVertexNormals(bank, 90.0);
     }
 
@@ -600,12 +600,12 @@ void drawBank(void)
 
 void drawStadium(void)
 {
-	if (!stadium) 
+	if (!stadium)
 	{
-        stadium = glmReadOBJ("models//stadium//stadium.obj");	
+        stadium = glmReadOBJ("models//stadium//stadium.obj");
         if (!stadium) exit(0);
         glmUnitize(stadium);
-        glmFacetNormals(stadium);        
+        glmFacetNormals(stadium);
 		glmVertexNormals(stadium, 90.0);
     }
     glmDraw(stadium, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
@@ -614,12 +614,12 @@ void drawStadium(void)
 
 void drawBuilding1(void)
 {
-	if (!building1) 
+	if (!building1)
 	{
-        building1 = glmReadOBJ("models//building1//equitable.obj");	
+        building1 = glmReadOBJ("models//building1//equitable.obj");
         if (!building1) exit(0);
         glmUnitize(building1);
-        glmFacetNormals(building1);        
+        glmFacetNormals(building1);
 		glmVertexNormals(building1, 90.0);
     }
     glmDraw(building1, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
@@ -628,12 +628,12 @@ void drawBuilding1(void)
 
 void drawBuilding3(void)
 {
-	if (!building3) 
+	if (!building3)
 	{
-        building3 = glmReadOBJ("models//building3//building3.obj");	
+        building3 = glmReadOBJ("models//building3//building3.obj");
         if (!building3) exit(0);
         glmUnitize(building3);
-        glmFacetNormals(building3);        
+        glmFacetNormals(building3);
 		glmVertexNormals(building3, 90.0);
     }
     glmDraw(building3, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
@@ -642,12 +642,12 @@ void drawBuilding3(void)
 
 void drawBuilding4(void)
 {
-	if (!building4) 
+	if (!building4)
 	{
-        building4 = glmReadOBJ("models//building4//building4.obj");	
+        building4 = glmReadOBJ("models//building4//building4.obj");
         if (!building4) exit(0);
         glmUnitize(building4);
-        glmFacetNormals(building4);        
+        glmFacetNormals(building4);
 		glmVertexNormals(building4, 90.0);
     }
     glmDraw(building4, GLM_SMOOTH | GLM_TEXTURE | GLM_MATERIAL);
@@ -661,7 +661,7 @@ void refreshCamera(void)
 		case PERSPECTIVE:
 			setPerspectiveView();
 			break;
-		
+
 		case ORTOGRAPHIC:
 			setOrtographicView();
 			break;
@@ -685,7 +685,7 @@ void setThirdPersonView(void)
 	else
 		upAxis=1;
 
-	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
+	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight);
 	glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
     gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 2000.0);
@@ -696,7 +696,7 @@ void setThirdPersonView(void)
 
 void setAnotherPlaneView(void)
 {
-	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
+	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight);
 	glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
     gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 2000.0);
@@ -714,7 +714,7 @@ void setPerspectiveView(void)
 	else
 		upAxis=1;
 
-	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
+	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight);
 	glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
     gluPerspective(60.0, (GLfloat) viewPortWidth/(GLfloat) viewPortHeight, 0.1, 2000.0);
@@ -729,7 +729,7 @@ void setOrtographicView(void)
 
 {
 	float orthoPoints;
-	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight); 
+	glViewport (0, 0, (GLsizei) viewPortWidth, (GLsizei) viewPortHeight);
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
 	orthoPoints = MAXHEIGHT/2;

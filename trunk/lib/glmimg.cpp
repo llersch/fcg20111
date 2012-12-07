@@ -5,8 +5,8 @@
 #include "Texture.h"
 #include <windows.h>
 #include <GL/gl.h>
+#include <GL/glext.h>
 #include "glm.h"
-
 
 
 #ifndef GL_BGR
@@ -40,8 +40,8 @@ GLuint glmLoadTexture(char *filename, GLboolean alpha, GLboolean repeat, GLboole
 	width = ttt.width;
 	height = ttt.height;
 	type = ttt.type;
-	
-    if(data == NULL) 
+
+    if(data == NULL)
 	{
 		char err[80];
 		sprintf(err,"Nu am putut incarca o textura %s!",numefis);
@@ -77,13 +77,13 @@ GLuint glmLoadTexture(char *filename, GLboolean alpha, GLboolean repeat, GLboole
 
     /*if (xSize2 > gl_max_texture_size)
 		xSize2 = gl_max_texture_size;
-    
+
     if (ySize2 > gl_max_texture_size)
 		ySize2 = gl_max_texture_size;*/
 
-    
+
 	/*************************************************************************************
-	// scale image to power of 2 in height and width 
+	// scale image to power of 2 in height and width
 	xPow2 = log((double)xSize2) / log(2.0);
 	yPow2 = log((double)ySize2) / log(2.0);
 
@@ -96,31 +96,31 @@ GLuint glmLoadTexture(char *filename, GLboolean alpha, GLboolean repeat, GLboole
 	    iyPow2++;
 
 	xSize2 = 1 << ixPow2;
-	ySize2 = 1 << iyPow2;	   
-    
-    if((width != xSize2) || (height != ySize2)) 
-	{		
+	ySize2 = 1 << iyPow2;
+
+    if((width != xSize2) || (height != ySize2))
+	{
 		rdata = (GLubyte*)malloc(sizeof(GLubyte) * xSize2 * ySize2 * pixelsize);
 		if (!rdata)
-			return 0;	    
+			return 0;
 		retval = gluScaleImage(type, width, height, GL_UNSIGNED_BYTE, data, xSize2, ySize2, GL_UNSIGNED_BYTE, rdata);
 
 		free(data);
 		data = rdata;
-		
+
     }
 	******************************************************************************************/
-	
+
 
     glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);   
-    
-    if(filtering) 
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    if(filtering)
 	{
 		filter_min = (mipmaps) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
 		filter_mag = GL_LINEAR;
     }
-    else 
+    else
 	{
 		filter_min = (mipmaps) ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
 		filter_mag = GL_NEAREST;
@@ -128,27 +128,27 @@ GLuint glmLoadTexture(char *filename, GLboolean alpha, GLboolean repeat, GLboole
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter_min);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter_mag);
-   
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (repeat) ? GL_REPEAT : GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (repeat) ? GL_REPEAT : GL_CLAMP);
 
-	
-    if(mipmaps)		
-			gluBuild2DMipmaps(GL_TEXTURE_2D, type, xSize2, ySize2, type, GL_UNSIGNED_BYTE, data);        
+
+    if(mipmaps)
+			gluBuild2DMipmaps(GL_TEXTURE_2D, type, xSize2, ySize2, type, GL_UNSIGNED_BYTE, data);
 	else
-			glTexImage2D(GL_TEXTURE_2D, 0, type, xSize2, ySize2, 0, type, GL_UNSIGNED_BYTE, data);   
-   
-    
+			glTexImage2D(GL_TEXTURE_2D, 0, type, xSize2, ySize2, 0, type, GL_UNSIGNED_BYTE, data);
+
+
     free(data);
 
-    
+
 	/**texcoordwidth = 1.;		// texcoords are in [0,1]
 	*texcoordheight = 1.;*/
-    
-    
-	*texcoordwidth = xSize2;		// size of texture coords 
+
+
+	*texcoordwidth = xSize2;		// size of texture coords
 	*texcoordheight = ySize2;
-    
-   
+
+
     return tex;
 }
